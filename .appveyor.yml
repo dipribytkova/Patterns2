@@ -1,0 +1,20 @@
+image: Ubuntu2004  # образ для сборки
+
+stack: jdk 11  # версия JDK
+
+branches:
+  only:
+    - main  # ветка git
+
+build: off  # будем использовать свой скрипт сборки
+
+install:
+  # запускаем SUT (& означает, что в фоновом режиме не блокируем терминал для запуска тестов)
+  - java -jar ./artifacts/app-ibank.jar -P:profile=test &
+
+test_script:
+  - ./gradlew test -Dselenide.headless=true --info  # запускаем тест, флаг --info позволяет выводить больше информации
+  # -Dselenide.headless=true запустит браузер в невидимом режиме
+on_finish:
+  - 7z a build/reports.zip build/reports/
+  - appveyor PushArtifact build/reports.zip
